@@ -1,0 +1,41 @@
+[
+    {
+        "image": "eval-data/images/000000397133.jpg",
+        "conversation": [
+            {
+                "content": "Mô tả chi tiết của hình ảnh",
+                "role": "user"
+            },
+            {
+                "content": "Một người đàn ông mặc tạp dề đầu bếp đang đứng trong bếp, trước một chiếc lò nướng màu đen. Ông đang cầm một chiếc chảo trong một tay và một chiếc thìa trong tay kia. Sau lưng ông là một chiếc bàn có nhiều loại dụng cụ nấu ăn khác nhau. Trên bàn là một số bát, cốc và dụng cụ. Ở phía bên trái của bàn là một chiếc lò nướng khác và một cái chảo lớn hơn.\n\nCạnh bàn là một người khác, mặc áo sơ mi và quần tây. Người này dường như đang quan sát người đầu bếp làm bánh pizza. Trong góc bên phải của khung cảnh, có một bồn rửa lớn với vòi nước.",
+                "role": "assistant"
+            }
+        ]
+    },
+    {
+        "image": "eval-data/images/000000270244.jpg",
+        "conversation": [
+            {
+                "content": "Mô tả chi tiết của hình ảnh",
+                "role": "user"
+            },
+            {
+                "content": "Đây là hình ảnh một con ngựa vằn đang đứng một mình trong khu rừng xanh. Con ngựa vằn đang đứng trên bãi cỏ, và xung quanh nó là những tán cây xanh tươi.",
+                "role": "assistant"
+            }
+        ]
+    },
+    {
+        "image": "VisionLLM-Vietnamese/eval-data/images/000000270244.jpg",
+        "conversation": [
+            {
+                "content": "Mô tả chi tiết của hình ảnh",
+                "role": "user"
+            },
+            {
+                "content": "Đây là một nhà bếp rộng rãi, hiện đại với nhiều đồ nội thất và đồ gia dụng. Ở trung tâm nhà bếp là một quầy đảo lớn có bồn rửa nông trại. Một bồn rửa đôi khác có thể được nhìn thấy ở bức tường bên phải, gần một bếp nấu ăn màu đen.\n\nBên cạnh khu vực quầy bếp là một bàn ăn lớn với mặt bàn bằng đá cẩm thạch và tủ gỗ bao quanh. Có hai chiếc ghế gỗ màu đen xung quanh bàn ăn. Hai chiếc ghế khác có thể được nhìn thấy ở bức tường bên trái của khung cảnh, bên dưới một chiếc tivi gắn trên tường.\n\nTrên quầy đảo có một bát trái cây và một chiếc cốc.",
+                "role": "assistant"
+            }
+        ]
+    }
+]

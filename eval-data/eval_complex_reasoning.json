@@ -1,0 +1,41 @@
+[
+    {
+        "image": "eval-data/images/000000397133.jpg",
+        "conversation": [
+            {
+                "content": "Người đầu bếp này đang chuẩn bị món gì?",
+                "role": "user"
+            },
+            {
+                "content": "Trong ảnh, người đầu bếp đứng trước lò nướng và đang làm bánh. Người đó đang sử dụng các dụng cụ khác nhau, chẳng hạn như chảo và đồ đựng nướng, hỗ trợ cho quá trình này. Bàn cạnh đó bày la liệt các loại bột và nguyên liệu khác, cho thấy người đầu bếp có thể đang làm nhiều món cùng lúc.",
+                "role": "assistant"
+            }
+        ]
+    },
+    {
+        "image": "eval-data/images/000000270244.jpg",
+        "conversation": [
+            {
+                "content": "Tại sao cảnh này lại kỳ lạ?",
+                "role": "user"
+            },
+            {
+                "content": "Trong ảnh, có một con ngựa vằn đứng một mình trong khu rừng xanh. Điều này kỳ lạ vì ngựa vằn thường được tìm thấy ở đồng cỏ hoặc thảo nguyên, chứ không phải trong rừng. Ngựa vằn cũng là loài động vật sống theo bầy đàn, nên việc nhìn thấy một cá thể ngựa vằn đơn độc cũng rất bất thường. Hơn nữa, ngựa vằn trong ảnh có vẻ như đang đứng rất thoải mái, không sợ hãi trước môi trường xung quanh. Điều này cho thấy rằng con ngựa vằn không phải là một động vật hoang dã, mà có thể là một con ngựa được thuần hóa hoặc thậm chí là một con vật nuôi đi lạc.",
+                "role": "assistant"
+            }
+        ]
+    },
+    {
+        "image": "eval-data/images/000000034873.jpg",
+        "conversation": [
+            {
+                "content": "Trong căn phòng này, có bao nhiêu người ngồi được thoải mái?",
+                "role": "user"
+            },
+            {
+                "content": "Có hai chiếc ghế được đặt ở phía trước bàn và hai chiếc ghế khác đặt ở hai đầu của bàn. Mỗi chiếc ghế có thể thoải mái chứa một người nên căn phòng này có thể chứa tối đa bốn người ngồi thoải mái.",
+                "role": "assistant"
+            }
+        ]
+    }
+]
