@@ -1,11 +1,3 @@
-import os
-try :
-    from sentence_transformers import SentenceTransformer
-except:
-    os.system('pip install -U sentence-transformers')
-    from sentence_transformers import SentenceTransformer
-    
-
 from sentence_transformers import SentenceTransformer
 import torch
 import torch.nn.functional as F
@@ -39,7 +31,10 @@ def arg_parser():
         default="results",
     )
     parser.add_argument('--model_name', type=str, default="hiieu/halong_embedding", help='Model name : dangvantuan/vietnamese-embedding, VoVanPhuc/sup-SimCSE-VietNamese-phobert-base, hiieu/halong_embedding')
-
+    parser.add_argument(
+        "-f", required=False,  # Thêm đối số -f không bắt buộc
+        help="Dummy argument for Jupyter compatibility",
+    )
     args = parser.parse_args()
     return args
 
