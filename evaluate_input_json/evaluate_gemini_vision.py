@@ -1,5 +1,5 @@
 '''
-python evaluate_input_json/evaluate_gemini_vision.py  --input_json_file eval-data/test_eval.json --output_json_file result.json --google_api_key YOUR_API_KEY --model_name gemini-1.5-flash
+python evaluate_input_json/evaluate_gemini_vision.py  --input_json_file eval-data/test_eval.json --output_json_file result.json --google_api_key YOUR_API_KEY --model_name gemini-1.5-flash --use_image False 
 '''
 
 """
@@ -72,10 +72,13 @@ class Gemini:
                     'data': image_path.read_bytes()
                 }
                 # response = self.model.generate_content([system_prompt, image, prompt])
-                try :
-                    response = self.model.generate_content([image, prompt])
-                except Exception as error:
-                    response = self.model.generate_content([prompt])
+                if args.use_image:
+                    try :
+                        response = self.model.generate_content([image, prompt])
+                    except:
+                        print("Error when generate content with image")
+                else:
+                    response = self.model.generate_content([prompt])       
                 try:
                     text = response.text
                 except:
@@ -114,6 +117,9 @@ def arg_parser():
         type=str,
         default="gemini-1.5-flash",
         help="Gemini model name",
+    )
+    parser.add_argument(
+        "--use_image", type=bool, default=False, 
     )
     parser.add_argument(
         "-f", required=False,  # Thêm đối số -f không bắt buộc
@@ -165,7 +171,13 @@ if __name__ == "__main__":
     result = []
     for item in data:
         id_image = item['id_image']
-        image_path = item['image']
+        if args.use_image:
+            try:
+                image_path = item['image']
+            except KeyError:
+                print(f"not have key 'image' in {item}")
+        else:
+            image_path = None
         prompt = get_prompt(question=item['question'], ground_truth=item['answer'], prediction=item['prediction'])
         list_scores = [model.get_response(image_path=image_path, prompt=prompt) for _ in range(5)]
         score = np.mean(list(map(float, list_scores)))
