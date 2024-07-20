@@ -1,11 +1,3 @@
-"""
-# Borrow from MM-Vet
-Please refer to https://ai.google.dev/tutorials/python_quickstart to get the API key
-
-Install with `pip install -q -U google-generativeai`,
-Then `python gemini_vision.py --mmvet_path /path/to/mm-vet --google_api_key YOUR_API_KEY`
-"""
-
 import os
 import time
 from pathlib import Path
