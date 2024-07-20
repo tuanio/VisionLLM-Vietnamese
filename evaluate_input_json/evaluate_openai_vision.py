@@ -104,6 +104,9 @@ class OpenAI:
                     text = response_json.get('choices', [{}])[0].get('message', {}).get('content', '')
                 except KeyError:
                     text = ""
+
+                if not text:
+                    print("Empty response received.")
                 
             except Exception as error:
                 print(f"Error: {error}")

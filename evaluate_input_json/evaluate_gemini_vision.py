@@ -72,7 +72,10 @@ class Gemini:
                     'data': image_path.read_bytes()
                 }
                 # response = self.model.generate_content([system_prompt, image, prompt])
-                response = self.model.generate_content([prompt])
+                try :
+                    response = self.model.generate_content([image, prompt])
+                except Exception as error:
+                    response = self.model.generate_content([prompt])
                 try:
                     text = response.text
                 except:
