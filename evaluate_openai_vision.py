@@ -206,8 +206,10 @@ if __name__ == "__main__":
     #     prediction="Trong ảnh, có một con ngựa vằn đứng một mình trong khu rừng xanh. Điều này kỳ lạ vì ngựa vằn thường được tìm thấy ở đồng cỏ hoặc thảo nguyên, chứ không phải trong rừng. Ngựa vằn cũng là loài động vật sống theo bầy đàn, nên việc nhìn thấy một cá thể ngựa vằn đơn độc cũng rất bất thường. Hơn nữa, ngựa vằn trong ảnh có vẻ như đang đứng rất thoải mái, không sợ hãi trước môi trường xung quanh. Điều này cho thấy rằng con ngựa vằn không phải là một động vật hoang dã, mà có thể là một con ngựa được thuần hóa hoặc thậm chí là một con vật nuôi đi lạc."
     # ) # 0.9
 
-    output = model.get_response(image_path, prompt)
+    output = [model.get_response(image_path=image_path, prompt=prompt) for i in tqdm(range(5), total=5)]
+    print(output)
+    output = list(map(float, output))
     print("Evaluate result:", output)
-
+    print("Mean score:", np.mean(output))
     # evaluate on mm-vet
     # evaluate_on_mmvet(args, model)
