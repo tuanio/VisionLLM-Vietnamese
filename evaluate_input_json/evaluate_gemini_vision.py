@@ -64,6 +64,7 @@ class Gemini:
     def get_response(self, image_path, prompt) -> str:
         # Query the model
         text = ""
+        time.sleep(3) # Sleep for 3 seconds to avoid rate limit
         while len(text) < 1:
             try:
                 if args.use_image:
@@ -85,8 +86,8 @@ class Gemini:
                     text = ""
             except Exception as error:
                 print(error)
-                print('Sleeping for 10 seconds')
-                time.sleep(10)
+                print('Sleeping for 20 seconds')
+                time.sleep(20) # sleep for 20 seconds before retry to avoid rate limit
             try:
                 float(text)
             except Exception as e:
