@@ -66,13 +66,13 @@ class Gemini:
         text = ""
         while len(text) < 1:
             try:
-                image_path = Path(image_path)
-                image = {
-                    'mime_type': f'image/{image_path.suffix[1:].replace("jpg", "jpeg")}',
-                    'data': image_path.read_bytes()
-                }
-                # response = self.model.generate_content([system_prompt, image, prompt])
                 if args.use_image:
+                    image_path = Path(image_path)
+                    image = {
+                        'mime_type': f'image/{image_path.suffix[1:].replace("jpg", "jpeg")}',
+                        'data': image_path.read_bytes()
+                    }
+                    # response = self.model.generate_content([system_prompt, image, prompt])
                     try :
                         response = self.model.generate_content([image, prompt])
                     except:
