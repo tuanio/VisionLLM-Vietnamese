@@ -1,18 +1,12 @@
-"""
-# Borrow from MM-Vet
-Please refer to https://ai.google.dev/tutorials/python_quickstart to get the API key
-
-Install with `pip install -q -U google-generativeai`,
-Then `python gemini_vision.py --mmvet_path /path/to/mm-vet --google_api_key YOUR_API_KEY`
-"""
-
 import os
 import time
 from pathlib import Path
-import google.generativeai as genai
+from openai import OpenAI
 import argparse
 from tqdm.auto import tqdm
 import numpy as np
+import base64
+import requests
 
 # prompt = """Dựa vào thông tin ảnh được cung cấp. So sánh kết quả thực tế và dự đoán từ các mô hình AI, để đưa ra điểm chính xác cho dự đoán. Điểm chính xác là 0.0 (hoàn toàn sai), 0.1, 0.2, 0.3, 0.4, 0.5 (nửa đúng nửa sai), 0.6, 0.7, 0.8, 0.9, hoặc 1.0 (hoàn toàn đúng). Nếu làm tốt tôi sẽ bo 1000$, hãy kiểm tra đáp án thật chính xác. Chỉ cần điền vào khoảng trống cuối cùng của điểm chính xác.
 
@@ -52,36 +46,74 @@ Can you explain this meme? | This meme is poking fun at the fact that the names 
 def get_prompt(question, ground_truth, prediction):
     return sys_prompt.format(question, ground_truth, prediction)
 
-class Gemini:
-    def __init__(self, model="gemini-pro-vision"):
-        self.model = genai.GenerativeModel(model)
 
-    def get_response(self, image_path, prompt) -> str:
-        # Query the model
+class OpenAI:
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini"):
+        self.api_key = api_key
+        self.model = model
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+
+    def encode_image(self, image_path: str) -> str:
+        """Encode the image as base64."""
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    def get_response(self, image_path: str, prompt: str) -> str:
+        """Get a response from the OpenAI API using an image and a prompt."""
         text = ""
         while len(text) < 1:
             try:
-                image_path = Path(image_path)
-                image = {
-                    'mime_type': f'image/{image_path.suffix[1:].replace("jpg", "jpeg")}',
-                    'data': image_path.read_bytes()
+                base64_image = self.encode_image(image_path)
+                payload = {
+                    "model": self.model,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "max_tokens": 300
                 }
-                # response = self.model.generate_content([system_prompt, image, prompt])
-                response = self.model.generate_content([prompt])
+                
+                response = requests.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=self.headers,
+                    json=payload
+                )
+                
+                response_json = response.json()
                 try:
-                    text = response.text
-                except:
+                    text = response_json.get('choices', [{}])[0].get('message', {}).get('content', '')
+                except KeyError:
                     text = ""
+                
             except Exception as error:
-                print(error)
-                print('Sleeping for 10 seconds')
+                print(f"Error: {error}")
+                print("Sleeping for 10 seconds")
                 time.sleep(10)
+                
             try:
-                float(text)
-            except Exception as e:
-                print("Could not get score! Try again...", str(e))
+                float(text)  # This may not be necessary depending on the response structure
+            except ValueError:
+                print("Could not get score! Try again...")
                 text = ""
+                
         return text.strip()
+
 
 
 def arg_parser():
@@ -98,14 +130,14 @@ def arg_parser():
         default="results",
     )
     parser.add_argument(
-        "--google_api_key", type=str, default=None,
-        help="refer to https://ai.google.dev/tutorials/python_quickstart"
+        "--openai_api_key", type=str, default=None,
+        help="https://platform.openai.com/",
     )
     parser.add_argument(
         "--model_name",
         type=str,
-        default="gemini-1.5-flash",
-        help="Gemini model name",
+        default="gpt-4o-mini",
+        help="OpenAI model name",
     )
     parser.add_argument(
         "-f", required=False,  # Thêm đối số -f không bắt buộc
@@ -118,57 +150,57 @@ def arg_parser():
 if __name__ == "__main__":
     args = arg_parser()
 
-    if args.google_api_key:
-        GOOGLE_API_KEY = args.google_api_key
+    if args.openai_api_key is not None:
+        OPENAI_API_KEY = args.openai_api_key
     else:
-        GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-    if GOOGLE_API_KEY is None:
-        raise ValueError("Please set the GOOGLE_API_KEY environment variable or pass it as an argument")
+    if OPENAI_API_KEY is None:
+        raise ValueError("Please set the OPENAI_API_KEY environment variable or pass it as an argument")
 
-    genai.configure(api_key=GOOGLE_API_KEY)
-    model = Gemini(model=args.model_name)
+    model = OpenAI(model=args.model_name, api_key= OPENAI_API_KEY)
 
     image_path = 'eval-data/images/000000397133.jpg'
     prompt = get_prompt(
         question='Mô tả chi tiết của hình ảnh',
         ground_truth='Một người đàn ông mặc tạp dề đầu bếp đang đứng trong bếp, trước một chiếc lò nướng màu đen. Ông đang cầm một chiếc chảo trong một tay và một chiếc thìa trong tay kia. Sau lưng ông là một chiếc bàn có nhiều loại dụng cụ nấu ăn khác nhau. Trên bàn là một số bát, cốc và dụng cụ. Ở phía bên trái của bàn là một chiếc lò nướng khác và một cái chảo lớn hơn.\n\nCạnh bàn là một người khác, mặc áo sơ mi và quần tây. Người này dường như đang quan sát người đầu bếp làm bánh pizza. Trong góc bên phải của khung cảnh, có một bồn rửa lớn với vòi nước.',
         prediction="Hình ảnh cho thấy một người đàn ông mặc tạp dề đang đứng trong bếp. Anh ta đang đứng trước một cái bàn, trên đó có nhiều dụng cụ nấu ăn khác nhau. Người đàn ông đang cầm một cái thìa và một cái nĩa, có vẻ như anh ta đang chuẩn bị nấu ăn.\nCó một số vật dụng nhà bếp khác trong bếp, bao gồm một cái bát, một cái cốc và một cái thìa khác. Một cái bát khác có thể được nhìn thấy trên một cái bàn gần đó.\nCó một số vật dụng khác trong bếp, chẳng hạn như một cái lò nướng, một cái lò vi sóng và một số tủ."
-    ) # => 0.8
+    ) # => 0.6
     # image_path = 'eval-data/images/000000270244.jpg'
     # prompt = get_prompt(
     #     question='Mô tả chi tiết của hình ảnh',
     #     ground_truth='Đây là hình ảnh một con ngựa vằn đang đứng một mình trong khu rừng xanh. Con ngựa vằn đang đứng trên bãi cỏ, và xung quanh nó là những tán cây xanh tươi.',
     #     prediction="Hình ảnh cho thấy một cánh đồng cỏ rộng lớn, xanh tươi với một con ngựa vằn đang đứng một mình. Con ngựa vằn có bộ lông sọc đen trắng đặc trưng, ​​với những sọc đen dày hơn ở phần đầu và cổ. Nó đang đứng trên một bãi cỏ cao, xung quanh là những cây xanh tươi tốt. Bầu trời phía trên con ngựa vằn có màu xanh lam nhạt, với một vài đám mây trắng lơ lửng."
-    # ) # => avg 0.8
+    # ) # => 0.9
 
     # image_path = 'eval-data/images/000000034873.jpg'
     # prompt = get_prompt(
     #     question='Mô tả chi tiết của hình ảnh',
     #     ground_truth='Đây là một nhà bếp rộng rãi, hiện đại với nhiều đồ nội thất và đồ gia dụng. Ở trung tâm nhà bếp là một quầy đảo lớn có bồn rửa nông trại. Một bồn rửa đôi khác có thể được nhìn thấy ở bức tường bên phải, gần một bếp nấu ăn màu đen.\n\nBên cạnh khu vực quầy bếp là một bàn ăn lớn với mặt bàn bằng đá cẩm thạch và tủ gỗ bao quanh. Có hai chiếc ghế gỗ màu đen xung quanh bàn ăn. Hai chiếc ghế khác có thể được nhìn thấy ở bức tường bên trái của khung cảnh, bên dưới một chiếc tivi gắn trên tường.\n\nTrên quầy đảo có một bát trái cây và một chiếc cốc.',
     #     prediction="Đây là một nhà bếp hiện đại với một hòn đảo trung tâm lớn ở giữa. Hòn đảo có một bồn rửa đôi bằng thép không gỉ ở một bên và một số tủ bếp ở bên kia. Trên bồn rửa có một số chai lọ và một số đồ dùng nhà bếp khác.\nCó một số ghế trong bếp, bao gồm một chiếc ghế dài ở bên phải hòn đảo và một số chiếc ghế khác ở phía xa hơn của căn phòng. Một chiếc tivi treo trên tường ở phía bên trái của hòn đảo.\nCó một cửa sổ lớn ở phía sau bếp, cung cấp nhiều ánh sáng tự nhiên. Sàn nhà được lát gạch màu sáng và tường được sơn màu trắng."
-    # ) # => avg 0.84
+    # ) # => 0.7
 
     # image_path = 'eval-data/images/000000397133.jpg'
     # prompt = get_prompt(
+    
     #     question='Người đầu bếp này đang chuẩn bị món gì?',
     #     ground_truth='Trong ảnh, người đầu bếp đứng trước lò nướng và đang làm bánh. Người đó đang sử dụng các dụng cụ khác nhau, chẳng hạn như chảo và đồ đựng nướng, hỗ trợ cho quá trình này. Bàn cạnh đó bày la liệt các loại bột và nguyên liệu khác, cho thấy người đầu bếp có thể đang làm nhiều món cùng lúc.',
     #     prediction="Người đầu bếp đang chuẩn bị một món ăn trên một chiếc bàn gỗ. Trên bàn có một cái tô lớn, một cái thìa và một số dụng cụ khác. Người đầu bếp đang đứng trước một cái bếp, nơi có một cái nồi lớn trên bếp. Có vẻ như người đầu bếp đang nấu một món ăn phức tạp, vì có nhiều nguyên liệu và dụng cụ khác nhau trên bàn. Người đầu bếp mặc đồng phục đầu bếp màu trắng và đang tập trung vào công việc của mình."
-    # ) # avg -> 0.3
+    # ) # 0.6
 
     # image_path = 'eval-data/images/000000270244.jpg'
     # prompt = get_prompt(
     #     question='Tại sao cảnh này lại kỳ lạ?',
     #     ground_truth='Trong ảnh, có một con ngựa vằn đứng một mình trong khu rừng xanh. Điều này kỳ lạ vì ngựa vằn thường được tìm thấy ở đồng cỏ hoặc thảo nguyên, chứ không phải trong rừng. Ngựa vằn cũng là loài động vật sống theo bầy đàn, nên việc nhìn thấy một cá thể ngựa vằn đơn độc cũng rất bất thường. Hơn nữa, ngựa vằn trong ảnh có vẻ như đang đứng rất thoải mái, không sợ hãi trước môi trường xung quanh. Điều này cho thấy rằng con ngựa vằn không phải là một động vật hoang dã, mà có thể là một con ngựa được thuần hóa hoặc thậm chí là một con vật nuôi đi lạc.',
     #     prediction="Trong ảnh, một con ngựa vằn đang đứng trên một cánh đồng cỏ xanh tươi, xung quanh là những hàng cây. Tuy nhiên, điều kỳ lạ là con ngựa vằn có vẻ như đang đứng trên một cánh đồng cỏ khô, không có cỏ xanh tươi. Điều này tạo nên sự tương phản bất thường giữa con ngựa vằn và môi trường xung quanh, khiến người xem phải suy nghĩ về lý do tại sao con vật lại ở trong tình trạng như vậy."
-    # ) # avg -> 0.26
+    # ) # 0.3
 
     # image_path = 'eval-data/images/000000034873.jpg'
     # prompt = get_prompt(
     #     question='Trong căn phòng này, có bao nhiêu người ngồi được thoải mái?',
     #     ground_truth='Có hai chiếc ghế được đặt ở phía trước bàn và hai chiếc ghế khác đặt ở hai đầu của bàn. Mỗi chiếc ghế có thể thoải mái chứa một người nên căn phòng này có thể chứa tối đa bốn người ngồi thoải mái.',
     #     prediction="Trong ảnh, có một người ngồi trên ghế ở phía bên phải của quầy bar. Người này có thể đang ngồi ở đó để thưởng thức đồ uống hoặc đồ ăn nhẹ, hoặc họ có thể đang chờ đợi ai đó. Không có người nào khác được nhìn thấy trong ảnh, vì vậy không thể xác định được có bao nhiêu người ngồi được thoải mái trong phòng."
-    # ) # avg -> 0
+    # ) # 0.3
 
     
     # image_path = 'eval-data/images/000000270244.jpg'
@@ -176,13 +208,12 @@ if __name__ == "__main__":
     #     question='Tại sao cảnh này lại kỳ lạ?',
     #     ground_truth='Trong ảnh, có một con ngựa vằn đứng một mình trong khu rừng xanh. Điều này kỳ lạ vì ngựa vằn thường được tìm thấy ở đồng cỏ hoặc thảo nguyên, chứ không phải trong rừng. Ngựa vằn cũng là loài động vật sống theo bầy đàn, nên việc nhìn thấy một cá thể ngựa vằn đơn độc cũng rất bất thường. Hơn nữa, ngựa vằn trong ảnh có vẻ như đang đứng rất thoải mái, không sợ hãi trước môi trường xung quanh. Điều này cho thấy rằng con ngựa vằn không phải là một động vật hoang dã, mà có thể là một con ngựa được thuần hóa hoặc thậm chí là một con vật nuôi đi lạc.',
     #     prediction="Trong ảnh, có một con ngựa vằn đứng một mình trong khu rừng xanh. Điều này kỳ lạ vì ngựa vằn thường được tìm thấy ở đồng cỏ hoặc thảo nguyên, chứ không phải trong rừng. Ngựa vằn cũng là loài động vật sống theo bầy đàn, nên việc nhìn thấy một cá thể ngựa vằn đơn độc cũng rất bất thường. Hơn nữa, ngựa vằn trong ảnh có vẻ như đang đứng rất thoải mái, không sợ hãi trước môi trường xung quanh. Điều này cho thấy rằng con ngựa vằn không phải là một động vật hoang dã, mà có thể là một con ngựa được thuần hóa hoặc thậm chí là một con vật nuôi đi lạc."
-    # ) # avg -> 1
+    # ) # 0.9
 
-    output = [model.get_response(image_path=image_path, prompt=prompt) for i in tqdm(range(5), total=5)]
+    output = [model.get_response(image_path=image_path, prompt=prompt) for i in tqdm(range(3))]
     print(output)
     output = list(map(float, output))
     print("Evaluate result:", output)
     print("Mean score:", np.mean(output))
-
     # evaluate on mm-vet
     # evaluate_on_mmvet(args, model)
