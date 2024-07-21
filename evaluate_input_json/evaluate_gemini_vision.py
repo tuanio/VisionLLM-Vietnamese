@@ -18,6 +18,7 @@ import argparse
 from tqdm.auto import tqdm
 import numpy as np
 import json 
+from tqdm import tqdm
 
 # prompt = """Dựa vào thông tin ảnh được cung cấp. So sánh kết quả thực tế và dự đoán từ các mô hình AI, để đưa ra điểm chính xác cho dự đoán. Điểm chính xác là 0.0 (hoàn toàn sai), 0.1, 0.2, 0.3, 0.4, 0.5 (nửa đúng nửa sai), 0.6, 0.7, 0.8, 0.9, hoặc 1.0 (hoàn toàn đúng). Nếu làm tốt tôi sẽ bo 1000$, hãy kiểm tra đáp án thật chính xác. Chỉ cần điền vào khoảng trống cuối cùng của điểm chính xác.
 
@@ -170,7 +171,7 @@ if __name__ == "__main__":
         data = json.load(file)
 
     result = []
-    for item in data:
+    for item in tqdm(data):
         id_image = item['id_image']
         if args.use_image:
             try:
