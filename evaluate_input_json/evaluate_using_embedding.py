@@ -8,9 +8,7 @@ import argparse
 import numpy as np
 import json
 
-def compare_gt_with_pred(gt, pred, model_name="hiieu/halong_embedding"):
-    # Khởi tạo model
-    model = SentenceTransformer(model_name)
+def compare_gt_with_pred(gt, pred, model):
     
     # Encode ground_truth và prediction
     gt_embedding = model.encode(gt)
@@ -50,6 +48,9 @@ if __name__ == "__main__":
     output_json_file = args.output_json_file
     model_name = args.model_name
     
+    # Khởi tạo model
+    model = SentenceTransformer(model_name)
+    
     # read json file format same as below
     '''
     [
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     result = []
     for item in data:
         id_image = item['id_image']
-        score = compare_gt_with_pred(item['answer'], item['prediction'], model_name)
+        score = compare_gt_with_pred(item['answer'], item['prediction'], model)
         list_score = [score]
         result.append({'id_image': id_image, 'list_score': list_score, 'score': score})
 
