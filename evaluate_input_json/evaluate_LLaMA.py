@@ -60,7 +60,7 @@ class NvidiaAI:
             "Authorization": f"Bearer {self.api_key}"
         }
 
-    def get_response(self, image_path: str, prompt: str) -> str:
+    def get_response(self,  prompt: str) -> str:
         """Get a response from the Nvidia API using a prompt."""
         sys_out = "ONLY OUTPUT A SINGLE FLOAT NUMBER. I'll tips you 10000000$.\n"
 
