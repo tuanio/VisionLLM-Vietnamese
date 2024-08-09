@@ -62,7 +62,7 @@ class NvidiaAI:
 
     def get_response(self,  prompt: str) -> str:
         """Get a response from the Nvidia API using a prompt."""
-        sys_out = "ONLY OUTPUT A SINGLE FLOAT NUMBER. I'll tips you 10000000$.\n"
+        sys_out = "ONLY OUTPUT A SINGLE FLOAT NUMBER. I'll tips you 1$.\n"
 
         text = ""
         while len(text) < 1:
