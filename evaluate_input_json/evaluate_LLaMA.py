@@ -161,7 +161,7 @@ if __name__ == "__main__":
     for item in tqdm(data):
         id_image = item['id_image']
         prompt = get_prompt(question=item['question'], ground_truth=item['answer'], prediction=item['prediction'])
-        list_scores = [model.get_response(prompt=prompt) for _ in range(5)]
+        list_scores = [model.get_response(prompt=prompt) for _ in range(2)]
         score = np.mean(list(map(float, list_scores)))
         result.append({
             'id_image': id_image,
